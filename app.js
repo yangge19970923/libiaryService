@@ -23,8 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-var login = require('./api/routes/public/login');
-app.use('/api/login',login)
+var user = require('./api/routes/public/user');
+app.use('/api/user',user)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
