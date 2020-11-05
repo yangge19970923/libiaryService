@@ -1,0 +1,101 @@
+'use strict';
+var mongoose = require('mongoose');
+var Novel = mongoose.model('Novel');
+var common = require('../common');
+const { reptile1, reptile2, reptile3 } = require("../../../public/untils/reptiles.js");
+
+// 小说推荐
+const recommend = async (req, res, next) => {
+    const { idCardNumber } = req.query;
+    const result = await reptile1("http://m.biquge.info/", "#rmtj .xbk");
+    if(result) {
+        Novel.findOne({idCardNumber},(err, resources) => {
+            if(resources && resources.novelInfo.length) {
+                result.novelInfo.forEach((item, index) => {
+                    resources.novelInfo.forEach((item2, index2) => {
+                        if(item.urlId === item2.urlId) {
+                            item.collectionColorShow = true;
+                        }
+                    })
+                })
+            }
+            if(result.novelInfo.length) {
+                common.sendJsonResponse(res, 200, {code: 1, result});
+            }else {
+                common.sendJsonResponse(res, 200, {code: -1, msg: "未获取到数据"});
+            }
+        })
+    }
+}
+
+// 查询收藏起来的小说
+const findCollectNovel = (req, res, next) => {
+    const { idCardNumber } = req.query;
+    Novel.findOne({idCardNumber},(err, data) => {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        if(data) {
+            common.sendJsonResponse(res, 200, {code: 1, novelInfo: data.novelInfo});
+        } else {
+            common.sendJsonResponse(res, 200, {code: -1, msg: "未获取到数据"});
+        }
+    })
+}
+
+//小说排行
+const rank = (req, res, next) => {
+    const baseUrl = "http://m.biquge.info/sort.html";
+}
+
+//小说分类
+const classification = async (req, res, next) => {
+    const result = await reptile2("http://m.biquge.info/sort.html", ".sorttop>ul>li.prev");
+    if(result) {
+        common.sendJsonResponse(res, 200, {code: 1, result});
+    }
+}
+
+//小说分类详细内容
+const classDetail = async (req, res, next) => {
+    const { href, idCardNumber } = req.query;
+    const result = await reptile1("http://m.biquge.info" + href, "section.list>.xbk");
+    if(result) {
+        Novel.findOne({idCardNumber},(err, resources) => {
+            if(resources && resources.novelInfo.length) {
+                result.novelInfo.forEach((item, index) => {
+                    resources.novelInfo.forEach((item2, index2) => {
+                        if(item.urlId === item2.urlId) {
+                            item.collectionColorShow = true;
+                        }
+                    })
+                })
+            }
+            if(result.novelInfo.length) {
+                common.sendJsonResponse(res, 200, {code: 1, result});
+            }else {
+                common.sendJsonResponse(res, 200, {code: -1, msg: "未获取到数据"});
+            }
+        })
+    }
+}
+
+//小说详情内容
+const novelDetal = async (req, res, next) => {
+    const { urlId } = req.body;
+    const result = await reptile3("http://m.biquge.info/" + urlId, '.cover>.block');
+    if(result) {
+        common.sendJsonResponse(res, 200, {code: 1, result});
+    } else {
+        common.sendJsonResponse(res, 200, {code: -1, msg: "未获取到数据"});
+    }
+}
+
+module.exports = {
+    recommend,
+    findCollectNovel,
+    classification,
+    classDetail,
+    novelDetal
+};

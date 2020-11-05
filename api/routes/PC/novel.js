@@ -1,0 +1,10 @@
+'use strict';
+var express = require('express');
+var controller = require('../../controller/PC/novel');
+var router = express.Router();
+router.get("/recommend",controller.recommend);
+router.get("/findCollectNovel",controller.findCollectNovel);
+router.get("/classification",controller.classification);
+router.get("/classDetail",controller.classDetail);
+router.post("/novelDetal",controller.novelDetal);
+module.exports = router;
