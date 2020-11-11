@@ -1,46 +1,48 @@
 var cheerio = require('cheerio'); //服务器使用jq语法
 var superagent = require('superagent'); //请求代理
+const userAgents = require("../javascripts/User-Agent.js"); //浏览器头部信息
+const userAgent = userAgents[parseInt(Math.random()*userAgents.length)];
 const reptile1 = (baseUrl, tag) => {
     return new Promise((resolve, reject) => {
-        superagent.get(baseUrl).end((err, sres) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
             if(err) {
                 console.log(err);
             }
             var $ = cheerio.load(sres.text);
-            var data = {};
+            // var data = {};
             let novelInfo = [];
             $(tag).each((index, item) => {
-                var $element = $(item);
-                if(index) {
-                    let imgSrc = $element.find(".tjimg img").attr("src");
-                    let novelName = $element.find(".tjxs>.xsm>a").text();
-                    let urlId = $element.find(".tjxs>.xsm>a").attr("href").replace(/\//g, '');
-                    let author = $element.find(".tjxs span").eq(1).text();
-                    let synopsis = $element.find(".tjxs span").eq(2).text();
+                $(item).find(".content").each((index2, item2) => {
+                    var $element = $(item2);
+                    const imgSrc = $element.find(".top .image img").attr("src");
+                    const novelName = $element.find(".top dl dt a").text();
+                    const urlId = $element.find(".top dl dt a").attr("href");
+                    const synopsis = $element.find(".top dl dd").text();
                     novelInfo.push({
                         imgSrc,
                         novelName,
                         urlId,
-                        author,
                         synopsis,
                         collectionColorShow: false
                     })
-                }else {
-                    let title = $element.text();
-                    data.title = title;
-                }
+                })
             })
-            data.novelInfo = novelInfo;
-            resolve(data);
+            resolve(novelInfo);
         })
     })
 }
 
 const reptile2 = (baseUrl, tag) => {
     return new Promise((resolve, reject) => {
-        superagent.get(baseUrl).end((err, sres) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
             if(err) {
-              return;  
+            return;  
             }
             var $ = cheerio.load(sres.text);
             let data = [];
@@ -57,19 +59,23 @@ const reptile2 = (baseUrl, tag) => {
 
 const reptile3 = (baseUrl, tag) => {
     return new Promise((resolve, reject) => {
-        superagent.get(baseUrl).end((err, sres) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
             if(err) {
                 return;
             }
             var $ = cheerio.load(sres.text);
-            const imgSrc = $(".cover>.block").find(".block_img2>img").attr("src");
-            const title = $(".cover>.block").find(".block_txt2>h2>a").text();
-            const author = $(".cover>.block").find(".block_txt2>p").eq(2).text();
-            const updateTime = $(".cover>.block").find(".block_txt2>p").eq(5).text();
-            const update = $(".cover>.block").find(".block_txt2>p").eq(6).text();
-            const synopsis = $(".cover>.intro_info").text().split("【展开】")[0];
+            const imgSrc = $(tag).eq(0).find("#sidebar #fmimg img").attr("src");
+            const title = $(tag).eq(0).find("#maininfo #info h1").text();
+            const author = $(tag).eq(0).find("#maininfo #info p").text();
+            const updateTime = $(tag).eq(0).find("#maininfo #info p").eq(2).text();
+            const update = $(tag).eq(0).find("#maininfo #info p").eq(3).find("a").text();
+            const updateUrl = $(tag).eq(0).find("#maininfo #info p").eq(3).find("a").attr("href");
+            const synopsis = $(tag).eq(0).find("#maininfo #intro p").text();
             const chapters = [];
-            $(".cover .chapter").eq(0).find("li").each((index, item) => {
+            $(tag).eq(1).find("#list dl dd").each((index, item) => {
                 var $element = $(item);
                 chapters.push({
                     chapter: $element.find("a").text(),
@@ -82,8 +88,34 @@ const reptile3 = (baseUrl, tag) => {
                 author,
                 updateTime,
                 update,
+                updateUrl,
                 synopsis,
                 chapters
+            }
+            resolve(info);
+        })
+    })
+}
+
+const reptile4 = (baseUrl, tag) => {
+    return new Promise((resolve, reject) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
+            if(err) {
+                return;
+            }
+            var $ = cheerio.load(sres.text);
+            const title = $(tag + " .bookname h1").text();
+            const preChapter = $(tag + " .bookname .bottem1 a").eq(1).attr("href");
+            const nextChapter = $(tag + " .bookname .bottem1 a").eq(3).attr("href");
+            const content = $(tag + " #content").html();
+            const info = {
+                title,
+                preChapter,
+                nextChapter,
+                content
             }
             resolve(info);
         })
@@ -93,5 +125,6 @@ const reptile3 = (baseUrl, tag) => {
 module.exports = {
     reptile1,
     reptile2,
-    reptile3
+    reptile3,
+    reptile4
 }

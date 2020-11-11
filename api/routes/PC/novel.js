@@ -6,5 +6,6 @@ router.get("/recommend",controller.recommend);
 router.get("/findCollectNovel",controller.findCollectNovel);
 router.get("/classification",controller.classification);
 router.get("/classDetail",controller.classDetail);
+router.post("/novelChapters",controller.novelChapters);
 router.post("/novelDetal",controller.novelDetal);
 module.exports = router;

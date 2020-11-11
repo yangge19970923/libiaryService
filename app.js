@@ -38,6 +38,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+// 代理池
+// const proxyPool = require("./public/javascripts/proxyPool.js");
+
 //公众接口
 var pubilc = require("./api/routes/public/index");
 app.use('/api/pubilc',pubilc);
