@@ -13,24 +13,24 @@ const reptile1 = (baseUrl, tag) => {
             }
             var $ = cheerio.load(sres.text);
             // var data = {};
-            let novelInfo = [];
-            $(tag).each((index, item) => {
-                $(item).find(".content").each((index2, item2) => {
-                    var $element = $(item2);
-                    const imgSrc = $element.find(".top .image img").attr("src");
-                    const novelName = $element.find(".top dl dt a").text();
-                    const urlId = $element.find(".top dl dt a").attr("href");
-                    const synopsis = $element.find(".top dl dd").text();
-                    novelInfo.push({
-                        imgSrc,
-                        novelName,
-                        urlId,
-                        synopsis,
-                        collectionColorShow: false
-                    })
+            let result = {
+                novelInfo: []
+            };
+            $(tag).find('.item').each((index, item) => {
+                var $element = $(item);
+                const imgSrc = $element.find(".image img").attr("src");
+                const novelName = $element.find("dl dt a").text();
+                const urlId = $element.find("dl dt a").attr("href");
+                const synopsis = $element.find("dl dd").text();
+                result.novelInfo.push({
+                    imgSrc,
+                    novelName,
+                    urlId,
+                    synopsis,
+                    collectionColorShow: false
                 })
             })
-            resolve(novelInfo);
+            resolve(result);
         })
     })
 }
@@ -42,15 +42,19 @@ const reptile2 = (baseUrl, tag) => {
         .timeout({ response: 5000, deadline: 60000 })
         .end((err, sres) => {
             if(err) {
-            return;  
+                console.log(err);  
+                return;
             }
             var $ = cheerio.load(sres.text);
             let data = [];
-            $(tag).each((index, item) => {
-                var $element = $(item);
-                let classify = $element.find("a.r3").text();
-                let href = $element.find("a.r3").attr("href");
-                data.push({title:classify, href: href});
+            $(tag).find('li').each((index, item) => {
+                console.log(index);
+                if(index > 1 && index < 8) {
+                    var $element = $(item);
+                    let classify = $element.find("a").text();
+                    let href = $element.find("a").attr("href");
+                    data.push({title:classify, href: href});
+                }
             })
             resolve(data);
         })
@@ -122,9 +126,57 @@ const reptile4 = (baseUrl, tag) => {
     })
 }
 
+const reptile5 = (baseUrl, tag) => {
+    return new Promise((resolve, reject) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
+            if(err) {
+                console.log(err);
+            }
+            var info = [];
+            var $ = cheerio.load(sres.text);
+            $(tag).each((index, item) => {
+                var rankArr = [];
+                $(item).find("ul").each((index2, item2) => {
+                    var sorts = [];
+                    var classTitle = '';
+                    $(item2).find('li').each((index3, item3) => {
+                        if(index3 === 0) {
+                            classTitle = $(item3).text().slice(0, 3);
+                        }else if(index3 === ($(item2).find('li').length - 1)) {
+
+                        }else {
+                            sorts.push({
+                                novelId: index3 - 1,
+                                novelTitle: $(item3).find("a").text(),
+                                urlId: $(item3).find('a').attr('href')
+                            })
+                        }
+                    })
+                    rankArr.push({
+                        sortId: index2,
+                        classTitle,
+                        sorts
+                    })
+                })
+                info.push({
+                    id: index,
+                    title: $(item).find("h3").text(),
+                    showItem: 1,
+                    rankArr
+                })
+            })
+            resolve(info);
+        })
+    })
+}
+
 module.exports = {
     reptile1,
     reptile2,
     reptile3,
-    reptile4
+    reptile4,
+    reptile5
 }

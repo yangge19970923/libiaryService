@@ -8,4 +8,5 @@ router.get("/classification",controller.classification);
 router.get("/classDetail",controller.classDetail);
 router.post("/novelChapters",controller.novelChapters);
 router.post("/novelDetal",controller.novelDetal);
+router.get("/rank",controller.rank);
 module.exports = router;

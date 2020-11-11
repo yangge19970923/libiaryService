@@ -2,7 +2,7 @@
 var mongoose = require('mongoose');
 var Novel = mongoose.model('Novel');
 var common = require('../common');
-const { reptile1, reptile2, reptile3, reptile4 } = require("../../../public/untils/reptiles.js");
+const { reptile1, reptile2, reptile3, reptile4, reptile5 } = require("../../../public/untils/reptiles.js");
 
 // 小说推荐
 const recommend = async (req, res, next) => {
@@ -45,13 +45,16 @@ const findCollectNovel = (req, res, next) => {
 }
 
 //小说排行
-const rank = (req, res, next) => {
-    const baseUrl = "http://m.biquge.info/sort.html";
+const rank = async (req, res, next) => {
+    const result = await reptile5("http://www.xbiquge.la/paihangbang/", "#wrapper #main .box");
+    if(result) {
+        common.sendJsonResponse(res, 200, {code: 1, result});
+    }
 }
 
 //小说分类
 const classification = async (req, res, next) => {
-    const result = await reptile2("http://m.biquge.info/sort.html", ".sorttop>ul>li.prev");
+    const result = await reptile2("http://www.xbiquge.la/", "#wrapper .nav ul");
     if(result) {
         common.sendJsonResponse(res, 200, {code: 1, result});
     }
@@ -60,7 +63,7 @@ const classification = async (req, res, next) => {
 //小说分类详细内容
 const classDetail = async (req, res, next) => {
     const { href, idCardNumber } = req.query;
-    const result = await reptile1("http://m.biquge.info" + href, "section.list>.xbk");
+    const result = await reptile1("http://www.xbiquge.la" + href, "#wrapper #main #hotcontent .ll");
     if(result) {
         Novel.findOne({idCardNumber},(err, resources) => {
             if(resources && resources.novelInfo.length) {
@@ -111,5 +114,6 @@ module.exports = {
     classification,
     classDetail,
     novelChapters,
-    novelDetal
+    novelDetal,
+    rank
 };
