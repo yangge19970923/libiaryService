@@ -7,10 +7,9 @@ var User = mongoose.model('User');
 
 //判断是移动端打开还是pc端,true是pc端，false移动端
 const isMobile = (req, res) => {
-    console.log(req.query);
-    if(req.query) {
-        req.session.isMobile = req.query.isMobile;
-        let data = req.query;
+    if(req.body) {
+        req.session.isMobile = req.body.isMobile;
+        let data = req.body;
         common.sendJsonResponse(res, 200, {code: 1, data});
     }else {
         common.sendJsonResponse(res, 200, {code: -1, msg: '失败'});

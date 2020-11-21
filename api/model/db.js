@@ -56,3 +56,4 @@ process.on('SIGTERM',function() {
  
 require('./admin/user');
 require('./admin/novel');
+require('./admin/mNovel');

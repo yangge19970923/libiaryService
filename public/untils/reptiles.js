@@ -83,7 +83,8 @@ const reptile3 = (baseUrl, tag) => {
                 var $element = $(item);
                 chapters.push({
                     chapter: $element.find("a").text(),
-                    chapterUrl: $element.find("a").attr('href')
+                    chapterUrl: $element.find("a").attr('href'),
+                    index
                 })
             })
             const info = {
@@ -113,13 +114,15 @@ const reptile4 = (baseUrl, tag) => {
             var $ = cheerio.load(sres.text);
             const title = $(tag + " .bookname h1").text();
             const preChapter = $(tag + " .bookname .bottem1 a").eq(1).attr("href");
+            const urlId = $(tag + " .bookname .bottem1 a").eq(2).attr("href");
             const nextChapter = $(tag + " .bookname .bottem1 a").eq(3).attr("href");
             const content = $(tag + " #content").html();
             const info = {
                 title,
                 preChapter,
                 nextChapter,
-                content
+                content,
+                urlId
             }
             resolve(info);
         })
@@ -173,10 +176,67 @@ const reptile5 = (baseUrl, tag) => {
     })
 }
 
+const reptile6 = (baseUrl, tag) => {
+    return new Promise((resolve, reject) => {
+        superagent.get(baseUrl)
+        .set({ 'User-Agent': userAgent })
+        .timeout({ response: 5000, deadline: 60000 })
+        .end((err, sres) => {
+            if(err) {
+                console.log(err);
+                return;
+            }
+            var $ = cheerio.load(sres.text);
+            let result = [];
+            $(tag).each((index, item) => {
+                const $element = $(item);
+                $element.find('.content').each((index2, item2) => {                   
+                    const imgSrc = $(item2).find(".top .image img").attr('src');
+                    const novelName = $(item2).find(".top dl dt a").text();
+                    const urlId = $(item2).find(".top dl dt a").attr("href");
+                    const synopsis = $(item2).find(".top dl dd").text();
+                    result.push({
+                        imgSrc,
+                        novelName,
+                        urlId,
+                        synopsis,
+                        collectionColorShow: false
+                    })
+                })
+            })
+            resolve(result);
+        })
+    })
+}
+
+const reptile7 = (searchText, baseUrl, tag) => {
+    console.log(baseUrl);
+    return new Promise((resolve, reject) => {
+        superagent.post(baseUrl)
+            .set({ 'Content-Type': "application/x-www-form-urlencoded", })
+            .timeout({ response: 5000, deadline: 60000 })
+            .send({searchkey : searchText})
+            .end((err, sres) => {
+                var $ = cheerio.load(sres.text);
+                var result = [];
+                $("#wrapper #main #content form .grid tr").each((index, item) => {
+                    if(index) {
+                        result.push({
+                            text: $(item).find(".even a").text(),
+                            urlId: $(item).find(".even a").attr("href")
+                        })
+                    }
+                })
+                resolve(result);
+            })
+    })
+}
 module.exports = {
     reptile1,
     reptile2,
     reptile3,
     reptile4,
-    reptile5
+    reptile5,
+    reptile6,
+    reptile7
 }

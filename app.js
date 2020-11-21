@@ -54,6 +54,13 @@ app.use('/api/config',config);
 app.use('/api/novel',novel);
 
 //移动端api接口
+var user = require('./api/routes/Mobile/user');
+var config = require('./api/routes/Mobile/config');
+var novel = require('./api/routes/Mobile/novel');
+
+app.use('/api/mobile/user',user);
+app.use('/api/mobile/config',config);
+app.use('/api/mobile/novel',novel);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -2,12 +2,14 @@
 var mongoose = require('mongoose');
 var Novel = mongoose.model('Novel');
 var common = require('../common');
-const { reptile1, reptile2, reptile3, reptile4, reptile5 } = require("../../../public/untils/reptiles.js");
+var superagent = require('superagent'); //请求代理
+var urlencode = require('urlencode');
+const { reptile1, reptile2, reptile3, reptile4, reptile5, reptile6, reptile7 } = require("../../../public/untils/reptiles.js");
 
 // 小说推荐
 const recommend = async (req, res, next) => {
     const { idCardNumber } = req.query;
-    const result = await reptile1("http://www.xbiquge.la/", "#wrapper>#main>.novelslist");
+    const result = await reptile6("http://www.xbiquge.la/", "#wrapper>#main>.novelslist");
     if(result) {
         Novel.findOne({idCardNumber},(err, resources) => {
             if(resources && resources.novelInfo.length) {
@@ -108,6 +110,17 @@ const novelDetal = async (req, res, next) => {
     }
 }
 
+//小说搜索
+const search = async (req, res, next) => {
+    const { searchText } = req.body;
+    const result = await reptile7(searchText, "http://www.xbiquge.la/modules/article/waps.php");
+    if(result.length) {
+        common.sendJsonResponse(res, 200, {code: 1, result});
+    } else {
+        common.sendJsonResponse(res, 200, {code: -1, msg: "数据为空"});
+    }
+}
+
 module.exports = {
     recommend,
     findCollectNovel,
@@ -115,5 +128,6 @@ module.exports = {
     classDetail,
     novelChapters,
     novelDetal,
-    rank
+    rank,
+    search
 };
